@@ -9,23 +9,33 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addPost } from "../postSlice";
+import { selectAllUsers } from "@/features/users/userSlice";
 
 const AddPostForm = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [author, setAuthor] = useState("");
+  const [userId, setUserId] = useState('');
 
   const dispatch = useDispatch();
 
-  const canSave = [title, content, author].every(Boolean);
+  const users = useSelector(selectAllUsers);
+
+  const authors = users?.map((user) => (
+    <SelectItem key={user.id} value={user.id}>
+      {user.name}
+    </SelectItem>
+  ));
+
+  const canSave = [title, content, userId].every(Boolean);
 
   const handlePost = () => {
-    if(title && content) {
-      dispatch(addPost(title, content));
+    if (title && content && userId) {
+      dispatch(addPost(title, content, userId));
       setTitle("");
       setContent("");
+      setUserId('')
     }
   };
 
@@ -34,23 +44,24 @@ const AddPostForm = () => {
       <h1 className="text-2xl font-semibold">Create a new Blog</h1>
       <form className="w-full flex items-center flex-col gap-4">
         <Input
+          name="postTitle"
           type="text"
           placeholder="Enter title from your blog"
           className="h-12"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <Select value={author} onValueChange={setAuthor}>
+        <Select value={userId} onValueChange={(value) => setUserId(value)}>
           <SelectTrigger className="w-full py-6">
             <SelectValue placeholder="Select The Author" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="anonymous">Anonymous</SelectItem>
-            <SelectItem value="dark">Dark</SelectItem>
-            <SelectItem value="system">System</SelectItem>
+            <SelectItem value="404">Anonymous</SelectItem>
+            {authors}
           </SelectContent>
         </Select>
         <Textarea
+          name="postContent"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Write The content for your blog"
