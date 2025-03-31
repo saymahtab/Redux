@@ -1,35 +1,49 @@
-import { useSelector } from "react-redux";
-import { selectAllPosts } from "../postSlice";
-import PostAuthor from "./PostAuthor";
-import TimeAgo from "./TimeAgo";
-import ReactionButtons from "./ReactionButtons";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchPosts,
+  getPostError,
+  getPostStatus,
+  selectAllPosts,
+} from "../postSlice";
+import { useEffect } from "react";
+import PostExerpt from "./PostExerpt";
+import { PostSkeleton } from "@/components/skeletons/PostSkeleton";
 
 const PostList = () => {
+  const dispatch = useDispatch();
+
   const posts = useSelector(selectAllPosts);
+  const postStatus = useSelector(getPostStatus);
+  const error = useSelector(getPostError);
 
-  const orderedPosts = posts.slice().sort((a, b) => b.date.localeCompare(a.date))
+  useEffect(() => {
+    if (postStatus === "idle") dispatch(fetchPosts());
+  }, [postStatus, dispatch]);
 
-  const renderedPosts = orderedPosts?.map((post) => {
-    
-    return (
-      <article
-        key={post.id}
-        className="p-5 bg-gray-100 flex items-start rounded-md flex-col gap-2 w-full"
-      >
-        <h3 className="font-semibold text-xl">{post.title}</h3>
-        <p>{post.content.substring(0, 100)}</p>
-        <div>
-          <PostAuthor postUserId={post.userId} />
-          <TimeAgo timestamp={post.date} />
-        </div>
-        <ReactionButtons post={post} />
-      </article>
+  let content;
+  if (postStatus === "loading") {
+    content = (
+      <div className="space-y-4 w-full">
+        <PostSkeleton />
+        <PostSkeleton />
+        <PostSkeleton />
+      </div>
     );
-  });
+  } else if (postStatus === "succeeded") {
+    const orderedPosts = posts
+      ?.slice()
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    content = orderedPosts?.map((post) => (
+      <PostExerpt key={post.id} post={post} />
+    ));
+  } else if (postStatus === "failed") {
+    content = <p>{error}</p>;
+  }
 
   return (
     <section className="flex items-center flex-col gap-3 mt-4">
-      {renderedPosts}
+      {content}
     </section>
   );
 };

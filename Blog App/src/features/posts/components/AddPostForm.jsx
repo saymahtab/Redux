@@ -10,34 +10,43 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addPost } from "../postSlice";
+import { addNewPost, addPost } from "../postSlice";
 import { selectAllUsers } from "@/features/users/userSlice";
 
 const AddPostForm = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [userId, setUserId] = useState('');
+  const [userId, setUserId] = useState("");
+  const [addRequestStatus, setAddRequestStatus] = useState("idle");
 
   const dispatch = useDispatch();
-
   const users = useSelector(selectAllUsers);
 
-  const authors = users?.map((user) => (
-    <SelectItem key={user.id} value={user.id}>
+  const canSave =
+    [title, content, userId].every(Boolean) && addRequestStatus === "idle";
+
+  const handlePost = () => {
+    if (canSave) {
+      try {
+        setAddRequestStatus("pending");
+        dispatch(addNewPost({title, body: content, userId})).unwrap();
+
+        setTitle("");
+        setContent("");
+        setUserId("");
+      } catch (error) {
+        console.error("Failed To save the post", error)
+      } finally {
+        setAddRequestStatus("idle")
+      }
+    }
+  };
+
+  const userOptions = users.map((user) => (
+    <SelectItem key={user.id} value={String(user.id)}>
       {user.name}
     </SelectItem>
   ));
-
-  const canSave = [title, content, userId].every(Boolean);
-
-  const handlePost = () => {
-    if (title && content && userId) {
-      dispatch(addPost(title, content, userId));
-      setTitle("");
-      setContent("");
-      setUserId('')
-    }
-  };
 
   return (
     <section className="bg-gray-100 p-5 flex items-center gap-4 flex-col rounded-md mt-2">
@@ -51,13 +60,13 @@ const AddPostForm = () => {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <Select value={userId} onValueChange={(value) => setUserId(value)}>
+        <Select value={userId} onValueChange={setUserId}>
           <SelectTrigger className="w-full py-6">
             <SelectValue placeholder="Select The Author" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="404">Anonymous</SelectItem>
-            {authors}
+            <SelectItem value="anonymous">Anonymous</SelectItem>
+            {userOptions}
           </SelectContent>
         </Select>
         <Textarea

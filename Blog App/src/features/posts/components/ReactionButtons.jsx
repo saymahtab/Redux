@@ -13,20 +13,23 @@ const emojis = {
 const ReactionButtons = ({ post }) => {
   const dispatch = useDispatch();
 
-  const handleEmojiClick = (emoji) => {
-    dispatch(addReaction({ id: post.id, emoji }));
+  const handleEmojiClick = (emogiName) => {
+    dispatch(addReaction({ postId: post.id, reaction: emogiName }));
   };
 
-  const emojiButtons = Object.entries(emojis).map(([emojiName, emojiIcon]) => (
-    <Button className='cursor-pointer' variant="outline" key={emojiName} onClick={() => handleEmojiClick(emojiName)}>
-      {emojiIcon} {post.reactions[emojiName]}
+  const emojiButtons = Object.entries(emojis).map(([name, emoji]) => (
+    <Button
+      className="cursor-pointer"
+      variant="outline"
+      key={name}
+      onClick={() => handleEmojiClick(name)}
+    >
+      {emoji} {post.reactions[name]}
     </Button>
   ));
 
   return (
-    <section className="flex items-center gap-3 mt-3">
-      {emojiButtons}
-    </section>
+    <section className="flex items-center gap-3 mt-3">{emojiButtons}</section>
   );
 };
 
