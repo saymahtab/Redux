@@ -1,13 +1,33 @@
-import AddPostForm from "./features/posts/components/AddPostForm"
-import PostList from "./features/posts/components/PostList"
+import React from "react";
+import PostList from "./features/posts/PostList";
+import AddPostForm from "./features/posts/AddPostForm";
+import { Navigate, Route, Routes } from "react-router-dom";
+import Layout from "./components/Layout";
+import SinglePostPage from "./features/posts/SinglePostPage";
+import EditPostForm from "./features/posts/EditPostForm";
+import UsersList from "./features/users/UsersList";
+import UserPage from "./features/users/UserPage";
 
-function App() {
+const App = () => {
   return (
-    <main className="h-screen w-full max-w-xl mx-auto">
-      <AddPostForm />
-      <PostList />
-    </main>
-  )
-}
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<PostList />} />
+        <Route path="post">
+          <Route index element={<AddPostForm />} />
+          <Route path=":postId" element={<SinglePostPage />} />
+          <Route path="edit/:postId" element={<EditPostForm />} />
+        </Route>
 
-export default App
+        <Route path="user">
+          <Route index element={<UsersList />} />
+          <Route path=":userId" element={<UserPage />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
+  );
+};
+
+export default App;

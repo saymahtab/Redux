@@ -1,12 +1,9 @@
-import AddPostForm from "./components/AddPostForm"
-import PostList from "./components/PostList"
+import Counter from './features/counter/Counter'
 
-function App() {
-
+const App = () => {
   return (
     <main className='App'>
-      <AddPostForm />
-      <PostList />
+      <Counter />
     </main>
   )
 }
